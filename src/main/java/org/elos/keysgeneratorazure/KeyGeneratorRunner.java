@@ -23,10 +23,18 @@ public class KeyGeneratorRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         String initialPrefix = "CAFE";
-        while (true) {
-            keyService.generateAndStoreKeys(initialPrefix);
-            initialPrefix = getNextPrefix(initialPrefix); // Implement logic to get the next prefix
+        if ("TRUE".equals(System.getenv("GENERATING_KEYS"))) {
+            while (true) {
+                keyService.generateAndStoreKeys(initialPrefix);
+                initialPrefix = getNextPrefix(initialPrefix); // Implement logic to get the next prefix
+            }
+        }  else {
+            for (int i = 0; i < 15; i++) {
+                System.out.println(i+" ESSESESESE");
+
+            }
         }
+
 
     }
 

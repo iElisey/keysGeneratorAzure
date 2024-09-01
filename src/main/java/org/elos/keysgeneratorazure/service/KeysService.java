@@ -41,90 +41,83 @@ public class KeysService {
 
 
     public void generateAndStoreKeys(String initialPrefix) {
-        if ("TRUE".equals(System.getenv("GENERATING_KEYS"))) {
+        for (int i = 0; i < 15; i++) {
+            System.out.println(initialPrefix);
+        }
+        int timeout = 10000;
+        if (!Objects.equals(initialPrefix, "CAFE")) {
+            timeout = 10000;
+        }
+        try {
+            // Introduce a 15-second delay before starting the key generation
+            System.out.println("Waiting for " + timeout / 1000 + " seconds before starting key generation...");
+            Thread.sleep(timeout);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Thread was interrupted, failed to complete initialization");
+        }
+        List<String> proxies = readProxiesFromFile("proxies.txt");
+        List<Thread> proxyThreads = new ArrayList<>();
+        AtomicInteger amountOfPromo = new AtomicInteger();
 
-            for (int i = 0; i < 15; i++) {
-                System.out.println(initialPrefix);
-            }
-            int timeout = 10000;
-            if (!Objects.equals(initialPrefix, "CAFE")) {
-                timeout = 10000;
-            }
-            try {
-                // Introduce a 15-second delay before starting the key generation
-                System.out.println("Waiting for " + timeout / 1000 + " seconds before starting key generation...");
-                Thread.sleep(timeout);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Thread was interrupted, failed to complete initialization");
-            }
-            List<String> proxies = readProxiesFromFile("proxies.txt");
-            List<Thread> proxyThreads = new ArrayList<>();
-            AtomicInteger amountOfPromo = new AtomicInteger();
+        for (String proxy : proxies) {
+            Thread proxyThread = new Thread(() -> {
+                // Create a fixed thread pool with 20 threads
+                int amountOfThreads = 3;
+                ExecutorService executorService = Executors.newFixedThreadPool(amountOfThreads);
+                List<Future<String>> futures = new ArrayList<>();
+                KeyConfig.KeyDetails keyDetails = KeyConfig.getKeyDetails(initialPrefix);
+                String appToken = keyDetails.getAppToken();
+                String promoId = keyDetails.getPromoId();
 
-            for (String proxy : proxies) {
-                Thread proxyThread = new Thread(() -> {
-                    // Create a fixed thread pool with 20 threads
-                    int amountOfThreads = 3;
-                    ExecutorService executorService = Executors.newFixedThreadPool(amountOfThreads);
-                    List<Future<String>> futures = new ArrayList<>();
-                    KeyConfig.KeyDetails keyDetails = KeyConfig.getKeyDetails(initialPrefix);
-                    String appToken = keyDetails.getAppToken();
-                    String promoId = keyDetails.getPromoId();
+                // Submit 20 login tasks in parallel
+                for (int i = 0; i < amountOfThreads; i++) {
+                    futures.add(executorService.submit(() -> login(proxy, appToken, promoId, keyDetails.getTimeout())));
 
-                    // Submit 20 login tasks in parallel
-                    for (int i = 0; i < amountOfThreads; i++) {
-                        futures.add(executorService.submit(() -> login(proxy, appToken, promoId, keyDetails.getTimeout())));
-
-                    }
-
-                    // Wait for all tasks to complete and process the results
-                    for (Future<String> future : futures) {
-                        try {
-                            String promoCode = future.get(); // Get the result of the login
-                            if (promoCode != null) {
-                                amountOfPromo.incrementAndGet();
-
-                                // Store the promo code in the database
-                                String[] promoParts = promoCode.split("-", 2);
-                                String promoPrefix = promoParts[0];
-                                String keyValue = promoParts[1];
-                                System.out.println("№" + amountOfPromo + " Promo Code: " + promoPrefix + "-" + keyValue);
-                                Keys key = new Keys();
-                                key.setPrefix(promoPrefix);
-                                key.setKeyValue(keyValue);
-                                keysRepository.save(key);
-                            }
-                        } catch (Exception e) {
-                            System.out.println("Error while retrieving promo code: " + e.getMessage());
-                        }
-                    }
-
-                    // Shut down the ExecutorService
-                    executorService.shutdown();
-                });
-
-                proxyThreads.add(proxyThread);
-                proxyThread.start();
-
-            }
-
-            // Wait for all proxy threads to finish
-            for (Thread thread : proxyThreads) {
-                try {
-                    thread.join();
-                } catch (InterruptedException e) {
-                    System.out.println("Thread interrupted: " + e.getMessage());
                 }
-            }
 
-            System.out.println("Total promo codes generated: " + amountOfPromo);
-        } else {
-            for (int i = 0; i < 15; i++) {
-                System.out.println(i+" ESSESESESE");
+                // Wait for all tasks to complete and process the results
+                for (Future<String> future : futures) {
+                    try {
+                        String promoCode = future.get(); // Get the result of the login
+                        if (promoCode != null) {
+                            amountOfPromo.incrementAndGet();
 
+                            // Store the promo code in the database
+                            String[] promoParts = promoCode.split("-", 2);
+                            String promoPrefix = promoParts[0];
+                            String keyValue = promoParts[1];
+                            System.out.println("№" + amountOfPromo + " Promo Code: " + promoPrefix + "-" + keyValue);
+                            Keys key = new Keys();
+                            key.setPrefix(promoPrefix);
+                            key.setKeyValue(keyValue);
+                            keysRepository.save(key);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error while retrieving promo code: " + e.getMessage());
+                    }
+                }
+
+                // Shut down the ExecutorService
+                executorService.shutdown();
+            });
+
+            proxyThreads.add(proxyThread);
+            proxyThread.start();
+
+        }
+
+        // Wait for all proxy threads to finish
+        for (Thread thread : proxyThreads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                System.out.println("Thread interrupted: " + e.getMessage());
             }
         }
+
+        System.out.println("Total promo codes generated: " + amountOfPromo);
+
     }
 
 
