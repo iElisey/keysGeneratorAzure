@@ -41,6 +41,9 @@ public class KeysService {
 
 
     public void generateAndStoreKeys(String initialPrefix) {
+        if (!System.getenv("GENERATING_KEYS").equals("TRUE")) {
+            return;
+        }
         for (int i = 0; i < 15; i++) {
             System.out.println(initialPrefix);
         }
