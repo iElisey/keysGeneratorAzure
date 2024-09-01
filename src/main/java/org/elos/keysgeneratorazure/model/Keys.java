@@ -1,4 +1,4 @@
-package org.elos.keysgeneratorazure;
+package org.elos.keysgeneratorazure.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

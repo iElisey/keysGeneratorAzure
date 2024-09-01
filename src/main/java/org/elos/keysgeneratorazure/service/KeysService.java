@@ -1,11 +1,16 @@
-package org.elos.keysgeneratorazure;
+package org.elos.keysgeneratorazure.service;
 
 import com.google.gson.JsonObject;
-import com.squareup.okhttp3.OkHttpClient;
+import com.google.gson.JsonParser;
+import okhttp3.OkHttpClient;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.elos.keysgeneratorazure.config.KeyConfig;
+import org.elos.keysgeneratorazure.model.Keys;
+import org.elos.keysgeneratorazure.repository.KeysRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -16,9 +21,12 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -26,12 +34,24 @@ public class KeysService {
     private final KeysRepository keysRepository;
     private final String[] prefixes = {"CUBE", "TRAIN", "MERGE", "TWERK", "POLY", "TRIM", "CAFE", "ZOO", "GANGS"};
 
+    @Autowired
+    public KeysService(KeysRepository keysRepository) {
+        this.keysRepository = keysRepository;
+    }
+
 
     public void generateAndStoreKeys(String initialPrefix) {
+        for (int i = 0; i < 15; i++) {
+            System.out.println(initialPrefix);
+        }
+        int timeout = 10000;
+        if (!Objects.equals(initialPrefix, "CAFE")) {
+            timeout = 10000;
+        }
         try {
             // Introduce a 15-second delay before starting the key generation
-            System.out.println("Waiting for 15 seconds before starting key generation...");
-            Thread.sleep(15000);
+            System.out.println("Waiting for " + timeout / 1000 + " seconds before starting key generation...");
+            Thread.sleep(timeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println("Thread was interrupted, failed to complete initialization");
@@ -43,20 +63,17 @@ public class KeysService {
         for (String proxy : proxies) {
             Thread proxyThread = new Thread(() -> {
                 // Create a fixed thread pool with 20 threads
-                ExecutorService executorService = Executors.newFixedThreadPool(5);
+                int amountOfThreads = 3;
+                ExecutorService executorService = Executors.newFixedThreadPool(amountOfThreads);
                 List<Future<String>> futures = new ArrayList<>();
                 KeyConfig.KeyDetails keyDetails = KeyConfig.getKeyDetails(initialPrefix);
                 String appToken = keyDetails.getAppToken();
                 String promoId = keyDetails.getPromoId();
 
                 // Submit 20 login tasks in parallel
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < amountOfThreads; i++) {
                     futures.add(executorService.submit(() -> login(proxy, appToken, promoId, keyDetails.getTimeout())));
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+
                 }
 
                 // Wait for all tasks to complete and process the results
@@ -65,12 +82,15 @@ public class KeysService {
                         String promoCode = future.get(); // Get the result of the login
                         if (promoCode != null) {
                             amountOfPromo.incrementAndGet();
-                            System.out.println(amountOfPromo + " Promo Code: " + promoCode);
 
                             // Store the promo code in the database
+                            String[] promoParts = promoCode.split("-", 2);
+                            String promoPrefix = promoParts[0];
+                            String keyValue = promoParts[1];
+                            System.out.println("№" + amountOfPromo + " Promo Code: " + promoPrefix + "-" + keyValue);
                             Keys key = new Keys();
-                            key.setPrefix(initialPrefix);
-                            key.setKeyValue(promoCode);
+                            key.setPrefix(promoPrefix);
+                            key.setKeyValue(keyValue);
                             keysRepository.save(key);
                         }
                     } catch (Exception e) {
@@ -84,11 +104,7 @@ public class KeysService {
 
             proxyThreads.add(proxyThread);
             proxyThread.start();
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+
         }
 
         // Wait for all proxy threads to finish
@@ -102,7 +118,6 @@ public class KeysService {
 
         System.out.println("Total promo codes generated: " + amountOfPromo);
     }
-
 
 
     private List<String> readProxiesFromFile(String filePath) {
@@ -130,8 +145,12 @@ public class KeysService {
 
         // Создание OkHttpClient с настройкой прокси
         OkHttpClient client = new OkHttpClient.Builder()
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port))) // Замените на свои данные прокси
-                .build();
+                .connectTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .readTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .writeTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port)))
+                .retryOnConnectionFailure(true).build();
+
 
         // Подготовка HTTP-запроса
         RequestBody body = RequestBody.create(
@@ -181,8 +200,11 @@ public class KeysService {
 
         // Создание OkHttpClient с настройкой прокси
         OkHttpClient client = new OkHttpClient.Builder()
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port))) // Замените на свои данные прокси
-                .build();
+                .connectTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .readTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .writeTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port)))
+                .retryOnConnectionFailure(true).build();
 
         // Подготовка HTTP-запроса
         RequestBody body = RequestBody.create(
@@ -240,8 +262,11 @@ public class KeysService {
 
         // Создание OkHttpClient с настройкой прокси
         OkHttpClient client = new OkHttpClient.Builder()
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port))) // Замените на свои данные прокси
-                .build();
+                .connectTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .readTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .writeTimeout(1200, TimeUnit.SECONDS) // устанавливаем timeout в 30 секунд
+                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port)))
+                .retryOnConnectionFailure(true).build();
 
         // Подготовка HTTP-запроса
         RequestBody body = RequestBody.create(
@@ -266,11 +291,11 @@ public class KeysService {
                 return jsonResponse.get("hasCode").getAsBoolean();
 
             } else {
-                System.out.println("Error1: " + response.code());
+                System.out.println("Error1: " + response.code() + " " + response.message() + " " + response.body() + " " + response.toString());
                 return false;
             }
         } catch (Exception e) {
-            System.out.println("Error2: "+e.getMessage());
+            System.out.println("Error2: " + e.getMessage());
             return false;
         }
     }
@@ -285,68 +310,5 @@ public class KeysService {
         }
 
         return timestamp + "-" + randomNumbers.toString();
-    }
-
-    public KeysService(KeysRepository keysRepository) {
-        this.keysRepository = keysRepository;
-    }
-
-
-    public void deleteAll(List<Keys> keys) {
-        keysRepository.deleteAll(keys);
-    }
-
-    public List<Keys> findTop4ByPrefixes(String... prefixes) {
-        List<Keys> keys = new ArrayList<>();
-        for (String prefix : prefixes) {
-            List<Keys> keysByPrefix = keysRepository.findTop4ByPrefix(prefix);
-            keys.addAll(keysByPrefix);
-        }
-        return keys;
-    }
-
-    public List<Keys> findTop8ByPrefix(String prefix) {
-        return keysRepository.findTop8ByPrefix(prefix);
-    }
-
-    public long countByPrefix(String prefix) {
-        return keysRepository.countByPrefix(prefix);
-    }
-
-
-    public boolean areKeysAvailable() {
-        for (String prefix : prefixes) {
-            long count = countByPrefix(prefix);
-            if (count < 4) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public List<Keys> getKeys() {
-        List<Keys> keysAll = new ArrayList<>();
-        for (String prefix : prefixes) {
-            List<Keys> keys = findTop4ByPrefixes(prefix);
-            keysAll.addAll(keys);
-            deleteAll(keys);
-        }
-        return keysAll;
-    }
-
-    public String getKeys(User user) {
-        StringBuilder keysString = new StringBuilder((Objects.equals(user.getLanguage(), "ru")
-                ? "\uD83D\uDD11 Ваши ключи:"
-                : "\uD83D\uDD11 Your keys:")
-                + "\n\n");
-        for (String prefix : prefixes) {
-            List<Keys> keys = findTop4ByPrefixes(prefix);
-            for (Keys key : keys) {
-                keysString.append("<code>").append(prefix).append("-").append(key.getKeyValue()).append("</code>").append("\n");
-            }
-            keysString.append("\n");
-            deleteAll(keys);
-        }
-        return keysString.toString();
     }
 }
