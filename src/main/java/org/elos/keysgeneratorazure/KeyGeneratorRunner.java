@@ -7,13 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 @Component
 public class KeyGeneratorRunner implements CommandLineRunner {
 
     private final KeysService keyService;
+    private static final Logger logger = Logger.getLogger(KeyGeneratorRunner.class.getName());
 
     @Autowired
     public KeyGeneratorRunner(KeysService keyService) {
@@ -22,6 +28,25 @@ public class KeyGeneratorRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        try {
+            // Create a new HttpClient
+            HttpClient client = HttpClient.newHttpClient();
+
+            // Create a new HttpRequest
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://api.ipify.org"))
+                    .GET()
+                    .build();
+
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // Print the IP address
+            logger.warning("Your Public IP Address: " + response.body());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String enableKeyGeneration = System.getenv("ENABLE_KEY_GENERATION");
         System.out.println(enableKeyGeneration);
         if ("true".equalsIgnoreCase(enableKeyGeneration)) {
