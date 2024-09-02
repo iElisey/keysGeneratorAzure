@@ -50,7 +50,7 @@ public class KeyGeneratorRunner implements CommandLineRunner {
         String enableKeyGeneration = System.getenv("ENABLE_KEY_GENERATION");
         System.out.println(enableKeyGeneration);
         if ("true".equalsIgnoreCase(enableKeyGeneration)) {
-            String initialPrefix = "CAFE";
+            String initialPrefix = System.getenv("PREFIX") == null || System.getenv().isEmpty() ? "TRIM" : System.getenv("PREFIX");
             while (true) {
                 keyService.generateAndStoreKeys(initialPrefix);
                 initialPrefix = getNextPrefix(initialPrefix); // Implement logic to get the next prefix

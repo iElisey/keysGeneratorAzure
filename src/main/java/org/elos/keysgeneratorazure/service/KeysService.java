@@ -45,9 +45,6 @@ public class KeysService {
             System.out.println(initialPrefix);
         }
         int timeout = 10000;
-        if (!Objects.equals(initialPrefix, "CAFE")) {
-            timeout = 10000;
-        }
         try {
             // Introduce a 15-second delay before starting the key generation
             System.out.println("Waiting for " + timeout / 1000 + " seconds before starting key generation...");
@@ -63,7 +60,7 @@ public class KeysService {
         for (String proxy : proxies) {
             Thread proxyThread = new Thread(() -> {
                 // Create a fixed thread pool with 20 threads
-                int amountOfThreads = 3;
+                int amountOfThreads = System.getenv("AMOUNT_OF_THREADS") == null ? 5 : Integer.parseInt(System.getenv("AMOUNT_OF_THREADS"));
                 ExecutorService executorService = Executors.newFixedThreadPool(amountOfThreads);
                 List<Future<String>> futures = new ArrayList<>();
                 KeyConfig.KeyDetails keyDetails = KeyConfig.getKeyDetails(initialPrefix);
