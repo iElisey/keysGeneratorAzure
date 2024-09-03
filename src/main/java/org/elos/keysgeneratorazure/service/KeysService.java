@@ -2,11 +2,7 @@ package org.elos.keysgeneratorazure.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import okhttp3.OkHttpClient;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 import org.elos.keysgeneratorazure.config.KeyConfig;
 import org.elos.keysgeneratorazure.model.Keys;
 import org.elos.keysgeneratorazure.repository.KeysRepository;
@@ -165,8 +161,9 @@ public class KeysService {
 
         // Выполнение запроса и обработка ответа
         try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                String responseBody = response.body().string();
+            ResponseBody bodied = response.body();
+            if (response.isSuccessful() && bodied != null) {
+                String responseBody = bodied.string();
 
                 // Парсинг JSON ответа
                 JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
@@ -218,15 +215,15 @@ public class KeysService {
 
         // Выполнение запроса и обработка ответа
         try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                String responseBody = response.body().string();
+            ResponseBody bodied = response.body();
+            if (response.isSuccessful() && bodied != null) {
+                String responseBody = bodied.string();
 
                 // Парсинг JSON ответа
                 JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
                 String clientToken = jsonResponse.get("clientToken").getAsString();
                 System.out.println(clientToken);
                 while (!register(proxy, clientToken, promoId, timeMillWait)) {
-                    Thread.sleep(1000);
                     System.out.println(false);
                 }
                 return getKey(proxy, clientToken, promoId);
@@ -234,7 +231,7 @@ public class KeysService {
             } else {
                 System.out.println("Ошибка: " + response.code());
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
         return null;
@@ -281,15 +278,16 @@ public class KeysService {
 
         // Выполнение запроса и обработка ответа
         try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                String responseBody = response.body().string();
+            ResponseBody bodied = response.body();
+            if (response.isSuccessful() && bodied != null) {
+                String responseBody = bodied.string();
 
                 // Парсинг JSON ответа
                 JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
                 return jsonResponse.get("hasCode").getAsBoolean();
 
             } else {
-                System.out.println("Error1: " + response.code() + " " + response.message() + " " + response.body() + " " + response.toString());
+                System.out.println("Error1: " + response.code() + " " + response.message() + " " + bodied + " " + response.toString());
                 return false;
             }
         } catch (Exception e) {
