@@ -37,7 +37,7 @@ public class KeysService {
 
 
     public void generateAndStoreKeys(String initialPrefix) {
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 15; i++) {
             System.out.println(initialPrefix);
         }
         int timeout = 10000;
@@ -80,7 +80,7 @@ public class KeysService {
                             String[] promoParts = promoCode.split("-", 2);
                             String promoPrefix = promoParts[0];
                             String keyValue = promoParts[1];
-//                            System.out.println("№" + amountOfPromo + " Promo Code: " + promoPrefix + "-" + keyValue);
+                            System.out.println("№" + amountOfPromo + " Promo Code: " + promoPrefix + "-" + keyValue);
                             Keys key = new Keys();
                             key.setPrefix(promoPrefix);
                             key.setKeyValue(keyValue);
@@ -222,9 +222,9 @@ public class KeysService {
                 // Парсинг JSON ответа
                 JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
                 String clientToken = jsonResponse.get("clientToken").getAsString();
-//                System.out.println(clientToken);
+                System.out.println(clientToken);
                 while (!register(proxy, clientToken, promoId, timeMillWait)) {
-//                    System.out.println(false);
+                    System.out.println(false);
                 }
                 return getKey(proxy, clientToken, promoId);
 
