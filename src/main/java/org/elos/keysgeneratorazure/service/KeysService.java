@@ -170,10 +170,10 @@ public class KeysService {
                 return jsonResponse.get("promoCode").getAsString();
 
             } else {
-//                System.out.println("Ошибка: " + response.code());
+                System.out.println("Ошибка: " + response.code());
             }
         } catch (IOException e) {
-//            System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
         return null;
     }
@@ -229,10 +229,10 @@ public class KeysService {
                 return getKey(proxy, clientToken, promoId);
 
             } else {
-//                System.out.println("Ошибка: " + response.code());
+                System.out.println("Ошибка: " + response.code());
             }
         } catch (IOException e) {
-//            System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
         return null;
     }
@@ -247,7 +247,7 @@ public class KeysService {
         try {
             Thread.sleep(timeMillsWait);
         } catch (InterruptedException e) {
-//            System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
 
         JsonObject jsonBody = new JsonObject();
