@@ -51,4 +51,4 @@ jobs:
           app-name: 'keysgen'
           slot-name: 'Production'
           package: '*.jar'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AA74D00138574493A34F74C44C43BF0F }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_182C943C3C424ACBBEFFFFA0D0B98A19 }}
