@@ -79,7 +79,7 @@ public class KeysService {
                             String[] promoParts = promoCode.split("-", 2);
                             String promoPrefix = promoParts[0];
                             String keyValue = promoParts[1];
-                            System.out.println("№" + amountOfPromo + " Promo Code: " + promoPrefix + "-" + keyValue);
+//                            System.out.println("№" + amountOfPromo + " Promo Code: " + promoPrefix + "-" + keyValue);
                             Keys key = new Keys();
                             key.setPrefix(promoPrefix);
                             key.setKeyValue(keyValue);
@@ -169,7 +169,7 @@ public class KeysService {
                 return jsonResponse.get("promoCode").getAsString();
 
             } else {
-                System.out.println("Ошибка: " + response.code());
+//                System.out.println("Ошибка: " + response.code());
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -221,17 +221,17 @@ public class KeysService {
                 // Парсинг JSON ответа
                 JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
                 String clientToken = jsonResponse.get("clientToken").getAsString();
-                System.out.println(clientToken);
+//                System.out.println(clientToken);
                 while (!register(proxy, clientToken, promoId, timeMillWait)) {
-                    System.out.println(false);
+//                    System.out.println(false);
                 }
                 return getKey(proxy, clientToken, promoId);
 
             } else {
-                System.out.println("Ошибка: " + response.code());
+//                System.out.println("Ошибка: " + response.code());
             }
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+//            System.out.println(e.getMessage());
         }
         return null;
     }
@@ -286,11 +286,11 @@ public class KeysService {
                 return jsonResponse.get("hasCode").getAsBoolean();
 
             } else {
-                System.out.println("Error1: " + response.code() + " " + response.message() + " " + bodied + " " + response.toString());
+//                System.out.println("Error1: " + response.code() + " " + response.message() + " " + bodied + " " + response.toString());
                 return false;
             }
         } catch (Exception e) {
-            System.out.println("Error2: " + e.getMessage());
+//            System.out.println("Error2: " + e.getMessage());
             return false;
         }
     }
