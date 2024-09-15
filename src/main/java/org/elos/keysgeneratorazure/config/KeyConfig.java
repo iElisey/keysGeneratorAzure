@@ -20,8 +20,8 @@ public class KeyConfig {
 //        KEY_CONFIGS.put("TILE", new KeyDetails("e68b39d2-4880-4a31-b3aa-0393e7df10c7", "e68b39d2-4880-4a31-b3aa-0393e7df10c7", 20000));
 //        KEY_CONFIGS.put("FLUFF", new KeyDetails("112887b0-a8af-4eb2-ac63-d82df78283d9", "112887b0-a8af-4eb2-ac63-d82df78283d9", 120000));
 //        KEY_CONFIGS.put("STONE", new KeyDetails("04ebd6de-69b7-43d1-9c4b-04a6ca3305af", "04ebd6de-69b7-43d1-9c4b-04a6ca3305af", 20000));
-//        KEY_CONFIGS.put("BOUNCE", new KeyDetails("bc72d3b9-8e91-4884-9c33-f72482f0db37", "bc72d3b9-8e91-4884-9c33-f72482f0db37", 60000));
-        KEY_CONFIGS.put("HIDE", new KeyDetails("4bf4966c-4d22-439b-8ff2-dc5ebca1a600", "4bf4966c-4d22-439b-8ff2-dc5ebca1a600", 20000));
+        KEY_CONFIGS.put("BOUNCE", new KeyDetails("bc72d3b9-8e91-4884-9c33-f72482f0db37", "bc72d3b9-8e91-4884-9c33-f72482f0db37", 60000));
+//        KEY_CONFIGS.put("HIDE", new KeyDetails("4bf4966c-4d22-439b-8ff2-dc5ebca1a600", "4bf4966c-4d22-439b-8ff2-dc5ebca1a600", 20000));
     }
 
     // Function to get appToken and promoId based on the key
