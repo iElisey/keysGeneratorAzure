@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy JAR app to Azure Web App - keysgeneratorik
+name: Build and deploy JAR app to Azure Web App - keysgenn
 
 on:
   push:
@@ -49,15 +49,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_88D7DB78763345A7B8BD0AFE158A3847 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1DBCB7F185B940D7884A6705E10A49D6 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3320D0DE40684D4D9A8F4D94D8360E4E }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_580829F404B84CC9B106626720E7D47E }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_AB0394E891B640FAB2B4552EFEA24860 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_BADC62AEE4904BE582A07F4EE8F12400 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'keysgeneratorik'
+          app-name: 'keysgenn'
           slot-name: 'Production'
           package: '*.jar'
           
